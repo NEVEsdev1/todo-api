@@ -1,0 +1,20 @@
+# Git e GitHub
+.git
+.github
+
+# Ambientes virtuais
+.venv
+venv
+
+# Caches e artefatos Python
+__pycache__
+*.py[cod]
+.pytest_cache
+
+# Testes e documentação não vão para dentro da imagem
+tests
+*.md
+
+# Próprios arquivos do Docker
+Dockerfile
+.dockerignore

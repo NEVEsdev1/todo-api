@@ -1,5 +1,7 @@
 # 📋 API de Tarefas
 
+[![CI](https://github.com/NEVEsdev1/todo-api/actions/workflows/ci.yml/badge.svg)](https://github.com/NEVEsdev1/todo-api/actions/workflows/ci.yml)
+
 Projeto desenvolvido para a disciplina de **DevOps** (PUCPR), com o objetivo de praticar um fluxo completo de **CI/CD**: repositório no GitHub, branches, pull requests, code review e integração contínua com **GitHub Actions**.
 
 ## 🚀 Sobre o projeto
@@ -27,7 +29,7 @@ API REST para gerenciamento de tarefas (to-do list) construída com **Python + F
 
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/SEU-USUARIO/todo-api.git
+git clone https://github.com/NEVEsdev1/todo-api.git
 cd todo-api
 
 # 2. Crie e ative um ambiente virtual

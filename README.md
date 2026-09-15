@@ -1,6 +1,7 @@
 # 📋 API de Tarefas
 
 [![CI](https://github.com/NEVEsdev1/todo-api/actions/workflows/ci.yml/badge.svg)](https://github.com/NEVEsdev1/todo-api/actions/workflows/ci.yml)
+[![CD](https://github.com/NEVEsdev1/todo-api/actions/workflows/cd.yml/badge.svg)](https://github.com/NEVEsdev1/todo-api/actions/workflows/cd.yml)
 
 Projeto desenvolvido para a disciplina de **DevOps** (PUCPR), com o objetivo de praticar um fluxo completo de **CI/CD**: repositório no GitHub, branches, pull requests, code review e integração contínua com **GitHub Actions**.
 
@@ -14,6 +15,7 @@ API REST para gerenciamento de tarefas (to-do list) construída com **Python + F
 - ✅ Documentação interativa gerada pelo FastAPI (Swagger UI)
 - ✅ 16 testes automatizados com pytest
 - ✅ Integração contínua: os testes rodam automaticamente a cada push e pull request
+- ✅ Entrega contínua: a imagem Docker da API é construída e publicada automaticamente no GitHub Container Registry
 
 ## 🛠️ Tecnologias
 
@@ -24,6 +26,8 @@ API REST para gerenciamento de tarefas (to-do list) construída com **Python + F
 | [Pydantic](https://docs.pydantic.dev/) | Modelos e validação de dados |
 | [pytest](https://pytest.org/) | Testes automatizados |
 | [GitHub Actions](https://github.com/features/actions) | Integração contínua (CI) |
+| [Docker](https://www.docker.com/) | Empacotamento da aplicação em imagem |
+| [GitHub Container Registry](https://docs.github.com/pt/packages/working-with-a-github-packages-registry/working-with-the-container-registry) | Registro de imagens (CD) |
 
 ## 📦 Como executar
 
@@ -47,6 +51,15 @@ uvicorn app.main:app --reload
 ```
 
 A API estará disponível em `http://127.0.0.1:8000` e a **documentação interativa** em `http://127.0.0.1:8000/docs`.
+
+## 🐳 Como rodar com Docker
+
+A imagem mais recente da API é publicada automaticamente pelo pipeline de CD no GitHub Container Registry:
+
+```bash
+docker pull ghcr.io/nevesdev1/todo-api:latest
+docker run -p 8000:8000 ghcr.io/nevesdev1/todo-api:latest
+```
 
 ## 🧪 Como rodar os testes
 
@@ -89,12 +102,23 @@ curl -X POST http://127.0.0.1:8000/tarefas \
 
 ## 🔄 Fluxo de CI/CD
 
-O workflow de integração contínua (`.github/workflows/ci.yml`) roda automaticamente em:
+### CI — Integração contínua (`.github/workflows/ci.yml`)
+
+O workflow de integração contínua roda automaticamente em:
 
 - todo **push** para a branch `main`
 - todo **pull request** aberto para a `main`
 
 Em cada execução, o GitHub Actions instala as dependências em um ambiente limpo com Python 3.12 e roda a suíte completa de testes com `pytest -v`. Assim, nenhum código que quebre a API chega à branch principal sem ser detectado.
+
+### CD — Entrega contínua (`.github/workflows/cd.yml`)
+
+O workflow de entrega contínua completa o pipeline: constrói a **imagem Docker** da API e a publica no **GitHub Container Registry** (ghcr.io). Ele roda em:
+
+- todo **push** para a branch `main` → publica as tags `latest`, `main` e `sha-<commit>`
+- todo **pull request** para a `main` → valida o build e publica a tag `pr-<número>`
+
+As imagens publicadas ficam disponíveis em `ghcr.io/nevesdev1/todo-api`, prontas para serem executadas em qualquer ambiente com `docker run`.
 
 ## 📄 Licença
 

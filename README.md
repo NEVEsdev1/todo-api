@@ -120,6 +120,12 @@ O workflow de entrega contínua completa o pipeline: constrói a **imagem Docker
 
 As imagens publicadas ficam disponíveis em `ghcr.io/nevesdev1/todo-api`, prontas para serem executadas em qualquer ambiente com `docker run`.
 
+### 🔔 Alertas no Discord (`.github/workflows/alertas.yml`)
+
+Sempre que uma **pull request é aberta ou mergeada**, ou um **push chega na `main`**, o workflow de alertas envia uma notificação para um canal do **Discord** via webhook, com os detalhes do evento (repositório, branch, autor e commit/PR).
+
+A URL do webhook é armazenada com segurança no secret do repositório `DISCORD_WEBHOOK` — nunca é exposta no código.
+
 ## 📄 Licença
 
 Este projeto está sob a licença [MIT](LICENSE).

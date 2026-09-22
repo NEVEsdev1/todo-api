@@ -1,0 +1,93 @@
+name: Alertas
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, reopened, closed]
+
+jobs:
+  alerta-discord:
+    name: Enviar alerta para o Discord
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviar alerta para o Discord
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          EVENTO: ${{ github.event_name }}
+          ACAO: ${{ github.event.action }}
+          BRANCH: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+          URL_REPO: ${{ github.server_url }}/${{ github.repository }}
+          URL_PR: ${{ github.event.pull_request.html_url }}
+          TITULO_PR: ${{ github.event.pull_request.title }}
+          MERGED: ${{ github.event.pull_request.merged }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then
+            echo "ERRO: secret DISCORD_WEBHOOK não configurado."
+            exit 1
+          fi
+
+          # Define o conteúdo do alerta conforme o evento que disparou o workflow
+          if [ "$EVENTO" = "pull_request" ] && [ "$ACAO" = "closed" ]; then
+            if [ "$MERGED" = "true" ]; then
+              TITULO="✅ Pull request mergeada no main"
+              DESCRICAO="A PR foi mergeada com sucesso na branch main."
+              COR=3066993
+            else
+              TITULO="❌ Pull request fechada sem merge"
+              DESCRICAO="A PR foi fechada sem ser mergeada."
+              COR=15158332
+            fi
+            LINK="$URL_PR"
+            CAMPO="Pull request"
+            VALOR="$TITULO_PR"
+          elif [ "$EVENTO" = "pull_request" ]; then
+            TITULO="🔀 Pull request $ACAO"
+            DESCRICAO="Uma pull request foi $ACAO no repositório."
+            COR=3447003
+            LINK="$URL_PR"
+            CAMPO="Pull request"
+            VALOR="$TITULO_PR"
+          else
+            TITULO="🚀 Push na branch main"
+            DESCRICAO="Novo commit chegou na branch principal."
+            COR=15105570
+            LINK="$URL_REPO"
+            CAMPO="Commit"
+            VALOR="${SHA:0:7}"
+          fi
+
+          # Monta o JSON com jq para evitar problemas de escape
+          PAYLOAD=$(jq -n \
+            --arg titulo "$TITULO" \
+            --arg descricao "$DESCRICAO" \
+            --arg cor "$COR" \
+            --arg link "$LINK" \
+            --arg campo "$CAMPO" \
+            --arg valor "$VALOR" \
+            --arg repo "$REPO" \
+            --arg branch "$BRANCH" \
+            --arg autor "$ACTOR" \
+            '{
+              username: "GitHub Actions",
+              embeds: [{
+                title: $titulo,
+                description: $descricao,
+                url: $link,
+                color: ($cor | tonumber),
+                fields: [
+                  {name: "Repositório", value: $repo, inline: true},
+                  {name: "Branch", value: $branch, inline: true},
+                  {name: "Autor", value: $autor, inline: true},
+                  {name: $campo, value: $valor, inline: false}
+                ],
+                footer: {text: "GitHub Actions — todo-api"}
+              }]
+            }')
+
+          curl -s -o /dev/null -w "Resposta do Discord: HTTP %{http_code}\n" \
+            -X POST -H "Content-Type: application/json" \
+            --data-binary "$PAYLOAD" "$WEBHOOK"
